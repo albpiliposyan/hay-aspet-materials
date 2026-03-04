@@ -5,7 +5,7 @@
 
 ---
 
-### Հայտարարություններ
+### 📢 Հայտարարություններ
 
 <!--* [🔗 TypeRacer](https://play.typeracer.com/) -->
 
@@ -15,12 +15,6 @@
 
 * [🔗 Armenian Typing Test](https://10fastfingers.com/typing-test/armenian)
 
-<....>
-<!--
-* [🔗 Օնլայն Կոմպիլյատոր (Python)](https://www.programiz.com/python-programming/online-compiler/)
-* [🔗 Տեսական նյութեր (Khan Academy)](https://hy.khanacademy.org/)
-* [🔗 Մուտքագրման վարժանքներ](https://www.typing.com/)
--->
 
 ---
 
