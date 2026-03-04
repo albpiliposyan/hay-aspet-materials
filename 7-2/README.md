@@ -7,14 +7,13 @@
 
 ### 📢 Հայտարարություններ
 
-<!--* [🔗 TypeRacer](https://play.typeracer.com/) -->
+[🔗 Հարցում - Հասարակական նորմեր](https://forms.gle/wZmSdgA8MaMoVFUK8)
 
 ---
 
 ###  Օգտակար հղումներ
 
 * [🔗 Armenian Typing Test](https://10fastfingers.com/typing-test/armenian)
-
 
 ---
 
