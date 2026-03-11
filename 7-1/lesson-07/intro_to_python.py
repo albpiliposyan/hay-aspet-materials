@@ -22,3 +22,4 @@ print(f"Դու {age} տարեկան ես։")
 # number = random.randint(1,10)
 # guess = int(input("Գուշակիր թիվը: "))
 # print("Ես պահել էի ", number, "թիվը")
+
