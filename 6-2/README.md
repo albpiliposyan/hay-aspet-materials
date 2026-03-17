@@ -7,8 +7,8 @@
 
 ### 📢 Հայտարարություններ
 
-<!--* [🔗 TypeRacer](https://play.typeracer.com/) -->
-* [Typeracer room](https://play.typeracer.com?rt=2k36nrn7d3)
+<!-- * [🔗 TypeRacer](https://play.typeracer.com/) -->
+<!-- * [🔗 Typeracer room](https://play.typeracer.com?rt=2k36nrn7d3) -->
 
 ---
 

@@ -8,6 +8,8 @@
 ### 📢 Հայտարարություններ
 
 <!--* [🔗 TypeRacer](https://play.typeracer.com/) -->
+* [🔗 Typeracer room](https://play.typeracer.com?rt=2b07n394cv)
+
 
 ---
 
