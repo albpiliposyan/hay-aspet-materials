@@ -19,7 +19,7 @@ print(f"Դու {age} տարեկան ես։")
 # print("Դուք կստանաք", dram, "դրամ։")
 
 # import random
-# number = random.randint(1,10)
+# secret_number = random.randint(1,10)
 # guess = int(input("Գուշակիր թիվը: "))
-# print("Ես պահել էի ", number, "թիվը")
+# print("Ես պահել էի ", secret_number, "թիվը")
 

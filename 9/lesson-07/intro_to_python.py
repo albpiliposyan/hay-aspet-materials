@@ -21,5 +21,9 @@ print(f"Դու {age} տարեկան ես։")
 # import random
 # number = random.randint(1,10)
 # guess = int(input("Գուշակիր թիվը: "))
+# if guess == number:
+#     print("Շնորհավորում եմ, ճիշտ գուշակեցիր։")
+# else:
+#     print("Ցավոք, սխալ գուշակեցիր։")
 # print("Ես պահել էի ", number, "թիվը")
 
