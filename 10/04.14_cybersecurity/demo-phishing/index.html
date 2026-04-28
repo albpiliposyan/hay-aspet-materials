@@ -1,0 +1,2192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pyton Practice Portal</title>
+
+  <style>
+    /* =========================================================
+       GLOBAL RESET & BASE
+    ========================================================= */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      /* --- Landing palette --- */
+      --brand-blue:    #3b82f6;
+      --brand-blue-dk: #1d4ed8;
+      --python-yellow: #fbbf24;
+      --surface:       #ffffff;
+      --bg:            #f0f4ff;
+      --text-main:     #1e293b;
+      --text-muted:    #64748b;
+      --radius:        14px;
+      --shadow:        0 8px 32px rgba(59,130,246,.15);
+
+      /* --- Terminal palette --- */
+      --term-bg:       #0037a0;
+      --term-green:    #e8e8e8;
+      --term-red:      #cc3333;
+      --term-amber:    #cccccc;
+      --term-dim:      #aaaaaa;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+    }
+
+    /* =========================================================
+       SCREEN MANAGEMENT
+       Only one <section> with .screen--active is visible.
+    ========================================================= */
+    .screen {
+      display: none;
+      width: 100%;
+      min-height: 100vh;
+    }
+    .screen--active {
+      display: flex;
+    }
+
+    /* =========================================================
+       LANDING SCREEN
+    ========================================================= */
+    #screen-landing {
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: linear-gradient(135deg, #e0ecff 0%, #f0f4ff 60%, #fef9ec 100%);
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 40px 44px;
+      max-width: 480px;
+      width: 100%;
+      animation: fadeUp .5s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Python logo badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--brand-blue-dk);
+      margin-bottom: 20px;
+      letter-spacing: .03em;
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--python-yellow);
+      flex-shrink: 0;
+    }
+
+    .card h1 {
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+
+    .card h1 span {
+      color: var(--brand-blue);
+    }
+
+    .card .subtitle {
+      font-size: .95rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      font-style: italic;
+    }
+
+    /* Form fields */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: .95rem;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      background: #f8fafc;
+    }
+
+    .form-group input:focus {
+      border-color: var(--brand-blue);
+      box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+      background: #fff;
+    }
+
+    /* Start button */
+    .btn-start {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-dk));
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: .02em;
+      transition: opacity .2s, transform .1s;
+      margin-bottom: 18px;
+    }
+
+    .btn-start:hover { opacity: .92; }
+    .btn-start:active { transform: scale(.98); }
+
+    /* Innocent-looking resource link */
+    .resource-link-wrap {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .resource-link {
+      font-size: .82rem;
+      color: var(--brand-blue);
+      text-decoration: none;
+      border-bottom: 1px dashed #93c5fd;
+      padding-bottom: 1px;
+      transition: color .15s;
+    }
+
+    .resource-link:hover { color: var(--brand-blue-dk); }
+
+    .card .fine-print {
+      font-size: .75rem;
+      color: #94a3b8;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* =========================================================
+       MALWARE OVERLAY — browser-hijack white-page style
+    ========================================================= */
+    #malware-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 200;
+      background: #f0f0f0;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #1a1a1a;
+    }
+    #malware-overlay.active { display: flex; }
+
+    /* Top alert bar */
+    .mw-topbar {
+      background: #cc0000;
+      color: #fff;
+      padding: 9px 18px;
+      font-size: .82rem;
+      font-weight: bold;
+      letter-spacing: .04em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .mw-topbar-blink {
+      animation: mwBlink .5s step-end infinite;
+      font-size: 1rem;
+    }
+    @keyframes mwBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* Main content area */
+    .mw-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 18px 20px 24px;
+      gap: 14px;
+    }
+
+    /* Big red headline box */
+    .mw-headline {
+      width: 100%;
+      max-width: 720px;
+      background: #fff3cd;
+      border: 2px solid #e6a817;
+      padding: 14px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .mw-headline-icon {
+      font-size: 2.2rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .mw-headline h2 {
+      font-size: 1rem;
+      color: #7a1a00;
+      margin-bottom: 4px;
+      font-weight: 900;
+    }
+    .mw-headline p {
+      font-size: .78rem;
+      color: #5a3a00;
+      line-height: 1.55;
+    }
+
+    /* Fake scan results table */
+    .mw-scan-table {
+      width: 100%;
+      max-width: 720px;
+      background: #fff;
+      border: 1px solid #ccc;
+      font-size: .72rem;
+      border-collapse: collapse;
+    }
+    .mw-scan-table thead tr {
+      background: #b30000;
+      color: #fff;
+    }
+    .mw-scan-table th, .mw-scan-table td {
+      padding: 5px 10px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    .mw-scan-table tbody tr:nth-child(even) { background: #fafafa; }
+    .mw-scan-table .sev-high  { color: #b30000; font-weight: bold; }
+    .mw-scan-table .sev-med   { color: #c87000; font-weight: bold; }
+
+    /* Fake installer progress */
+    .mw-installer {
+      width: 100%;
+      max-width: 720px;
+      background: #fff;
+      border: 1px solid #aaa;
+      padding: 12px 16px;
+    }
+    .mw-installer-title {
+      font-size: .78rem;
+      font-weight: bold;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+    .mw-inst-track {
+      height: 18px;
+      background: #e0e0e0;
+      border: 1px inset #aaa;
+      position: relative;
+      margin-bottom: 4px;
+      overflow: hidden;
+    }
+    .mw-inst-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(180deg, #4a90d9 0%, #1a5fa0 100%);
+      transition: width .15s linear;
+    }
+    .mw-inst-label {
+      font-size: .68rem;
+      color: #555;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* Action buttons row */
+    .mw-btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 720px;
+      width: 100%;
+    }
+
+    /* Big DOWNLOAD button */
+    .mw-btn-download {
+      background: linear-gradient(180deg, #22a522 0%, #166016 100%);
+      color: #fff;
+      border: none;
+      padding: 10px 28px;
+      font-size: .9rem;
+      font-weight: bold;
+      cursor: pointer;
+      letter-spacing: .04em;
+      border-radius: 2px;
+      box-shadow: 0 2px 4px rgba(0,0,0,.3);
+    }
+    .mw-btn-download:hover { filter: brightness(1.1); }
+
+    .mw-btn-skip {
+      background: #d4d0c8;
+      color: #333;
+      border: 1px solid #888;
+      border-right-color: #333;
+      border-bottom-color: #333;
+      padding: 10px 18px;
+      font-size: .78rem;
+      cursor: pointer;
+    }
+    .mw-btn-skip:hover { background: #c8c4bc; }
+
+    /* Secondary alert banners that spawn one by one */
+    .mw-banner {
+      width: 100%;
+      max-width: 720px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-left: 4px solid #cc0000;
+      padding: 8px 12px;
+      font-size: .75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .mw-banner span { color: #333; line-height: 1.4; }
+    .mw-banner strong { color: #cc0000; }
+    .mw-banner-x {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: .9rem;
+      color: #888;
+      flex-shrink: 0;
+    }
+    .mw-banner-x:hover { color: #000; }
+
+    /* Inline style overrides */
+    .mw-title, .mw-sub, .mw-dl-wrap, .mw-dl-label, .mw-dl-stats, .mw-mini-log { display: none; }
+
+    /* =========================================================
+       TERMINAL / HACK SCREEN
+    ========================================================= */
+    #screen-hack {
+      flex-direction: column;
+      background: var(--term-bg);
+      color: var(--term-green);
+      font-family: 'Courier New', Courier, monospace;
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* =========================================================
+       FAKE DIALOG WINDOWS (overlay on hack screen)
+    ========================================================= */
+    .dialog-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none; /* dialogs themselves re-enable pointer-events */
+      z-index: 50;
+    }
+
+    /* Individual fake dialog window */
+    .fdlg {
+      position: absolute;
+      /* width set per-instance by JS */
+      max-width: calc(100vw - 20px);
+      background: #d4d0c8;
+      border: 2px solid #ffffff;
+      border-right-color: #404040;
+      border-bottom-color: #404040;
+      pointer-events: all;
+      font-family: 'Courier New', Courier, monospace;
+      color: #000;
+    }
+
+    .fdlg-titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #000080;
+      padding: 3px 4px 3px 6px;
+      font-size: .72rem;
+      color: #fff;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      user-select: none;
+    }
+
+    .fdlg-titlebar strong { color: #fff; font-size: .75rem; }
+
+    .fdlg-x {
+      background: #d4d0c8;
+      border: 1px solid #fff;
+      border-right-color: #404040;
+      border-bottom-color: #404040;
+      color: #000;
+      cursor: pointer;
+      font-size: .75rem;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-weight: bold;
+      line-height: 1;
+      width: 16px;
+      height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .fdlg-x:hover { background: #c0c0c0; }
+
+    .fdlg-body {
+      padding: 10px 12px 10px;
+      font-size: .72rem;
+      color: #000;
+      line-height: 1.65;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .fdlg-scan {
+      background: #fff;
+      border: 1px inset #808080;
+      padding: 6px 8px;
+      margin-bottom: 8px;
+      font-size: .7rem;
+      line-height: 1.7;
+      font-family: 'Courier New', Courier, monospace;
+      color: #000;
+    }
+
+    .fdlg-threat  { color: #800000; font-weight: bold; }
+    .fdlg-file    { color: #000080; }
+    .fdlg-status  { color: #008000; font-weight: bold; }
+
+    .fdlg-warn {
+      color: #000;
+      margin-bottom: 10px;
+      font-size: .71rem;
+    }
+
+    .fdlg-btn {
+      display: inline-block;
+      padding: 3px 14px;
+      background: #d4d0c8;
+      color: #000;
+      border: 1px solid #fff;
+      border-right-color: #404040;
+      border-bottom-color: #404040;
+      cursor: pointer;
+      font-size: .72rem;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      margin-right: 6px;
+    }
+    .fdlg-btn:hover { background: #e0ddd6; }
+    .fdlg-btn-row { text-align: right; }
+
+    @keyframes flicker {
+      0%,100% { opacity: 1; }
+      92%      { opacity: 1; }
+      93%      { opacity: .85; }
+      94%      { opacity: 1; }
+      97%      { opacity: .9; }
+      98%      { opacity: 1; }
+    }
+    /* flicker intentionally not applied to #screen-hack */
+
+    /* Plain status bar replaces pulsing warning banner */
+    .warning-banner {
+      background: #002d8a;
+      color: #aabee8;
+      text-align: left;
+      font-size: .72rem;
+      padding: 5px 16px;
+      letter-spacing: .04em;
+      border-bottom: 1px solid #1a4abf;
+      flex-shrink: 0;
+    }
+
+    /* Terminal body */
+    .term-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 24px;
+      overflow: hidden;
+    }
+
+    .term-header {
+      font-size: .72rem;
+      color: #aabee8;
+      margin-bottom: 10px;
+    }
+
+    /* Scrolling log container */
+    .log-container {
+      flex: 1;
+      overflow: hidden;          /* hide scrollbar; auto-scroll via JS */
+      font-size: .82rem;
+      line-height: 1.7;
+      color: var(--term-green);
+    }
+
+    .log-line {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* All log lines are the same terminal green — no per-class colour overrides */
+
+    /* Blinking cursor */
+    .cursor {
+      display: inline-block;
+      width: 7px;
+      height: 1em;
+      background: #aaa;
+      vertical-align: text-bottom;
+      animation: blink .9s step-end infinite;
+      margin-left: 1px;
+    }
+
+    @keyframes blink {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0; }
+    }
+
+    /* Terminal text progress bar */
+    .progress-wrap {
+      margin-top: 14px;
+      flex-shrink: 0;
+      border-top: 1px solid #1a4abf;
+      padding-top: 10px;
+    }
+
+    .progress-label {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: .78rem;
+      color: #aabee8;
+      white-space: pre;
+    }
+
+    /* =========================================================
+       REVEAL SCREEN
+    ========================================================= */
+    #screen-reveal {
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: linear-gradient(160deg, #0f172a 0%, #1e3a5f 100%);
+      flex-direction: column;
+    }
+
+    .reveal-card {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);  
+      backdrop-filter: blur(6px);
+      border-radius: var(--radius);
+      padding: 40px 44px;
+      max-width: 600px;
+      width: 100%;
+      color: #e2e8f0;
+      animation: fadeUp .6s ease both;
+    }
+
+    .reveal-badge {
+      display: inline-block;
+      background: #16a34a;
+      color: #fff;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+    }
+
+    .reveal-card h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #f1f5f9;
+      margin-bottom: 18px;
+      line-height: 1.3;
+    }
+
+    /* "Nothing happened" strip */
+    .safe-strip {
+      background: rgba(22,163,74,.15);
+      border: 1px solid rgba(22,163,74,.35);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 22px;
+    }
+
+    .safe-strip p {
+      font-size: .9rem;
+      line-height: 1.9;
+      color: #86efac;
+      font-weight: 600;
+    }
+
+    .reveal-card .explain {
+      font-size: .9rem;
+      color: #94a3b8;
+      line-height: 1.7;
+      margin-bottom: 22px;
+    }
+
+    /* Lesson tips list */
+    .lessons {
+      list-style: none;
+      margin-bottom: 28px;
+    }
+
+    .lessons li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: .88rem;
+      color: #cbd5e1;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .lessons li::before {
+      content: "→";
+      color: var(--python-yellow);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Restart button */
+    .btn-restart {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: .03em;
+      transition: opacity .2s, transform .1s;
+    }
+
+    .btn-restart:hover  { opacity: .9; }
+    .btn-restart:active { transform: scale(.98); }
+
+    .reveal-card .footer-note {
+      text-align: center;
+      font-size: .75rem;
+      color: #475569;
+      margin-top: 16px;
+      line-height: 1.5;
+    }
+
+    /* =========================================================
+       RESPONSIVE TWEAKS
+    ========================================================= */
+    @media (max-width: 520px) {
+      .card, .reveal-card {
+        padding: 28px 22px;
+      }
+      .card h1 { font-size: 1.35rem; }
+      .reveal-card h2 { font-size: 1.3rem; }
+    }
+
+    /* =========================================================
+       SCREEN 0 — ENROLLMENT
+    ========================================================= */
+    #screen-enroll {
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: linear-gradient(135deg, #e0ecff 0%, #f0f4ff 60%, #fef9ec 100%);
+    }
+
+    .enroll-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 40px 44px;
+      max-width: 420px;
+      width: 100%;
+      animation: fadeUp .5s ease both;
+    }
+
+    .enroll-card .enroll-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .enroll-logo-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: #fff;
+      font-weight: 900;
+      letter-spacing: -.03em;
+      flex-shrink: 0;
+    }
+
+    .enroll-logo-text {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .enroll-logo-text small {
+      display: block;
+      font-size: .72rem;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    .enroll-card h2 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .enroll-card .enroll-sub {
+      font-size: .85rem;
+      color: var(--text-muted);
+      margin-bottom: 26px;
+      line-height: 1.5;
+    }
+
+    .enroll-card .form-group {
+      margin-bottom: 16px;
+    }
+
+    .enroll-card label {
+      display: block;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+      letter-spacing: .02em;
+    }
+
+    .enroll-card input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #dbeafe;
+      border-radius: 8px;
+      font-size: .95rem;
+      font-family: inherit;
+      color: var(--text-main);
+      background: #f8faff;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .enroll-card input:focus {
+      border-color: var(--brand-blue);
+      box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+      background: #fff;
+    }
+
+    .enroll-card input.input-error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239,68,68,.12);
+    }
+
+    .enroll-error-msg {
+      font-size: .78rem;
+      color: #ef4444;
+      margin-top: 5px;
+      min-height: 1.1em;
+    }
+
+    .btn-enroll {
+      width: 100%;
+      margin-top: 8px;
+      padding: 12px;
+      background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-dk));
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: .02em;
+      transition: opacity .2s, transform .1s;
+    }
+
+    .btn-enroll:hover  { opacity: .9; }
+    .btn-enroll:active { transform: scale(.98); }
+
+    .enroll-fine {
+      text-align: center;
+      font-size: .72rem;
+      color: var(--text-muted);
+      margin-top: 16px;
+      line-height: 1.5;
+    }
+
+    .enroll-fine a {
+      color: var(--brand-blue);
+      text-decoration: none;
+    }
+
+    /* =========================================================
+       SCREEN 4 — MALWARE DOWNLOAD (merged from malware.html)
+    ========================================================= */
+    #screen-malware {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: #0e0000;
+      background-image: repeating-linear-gradient(
+        0deg,
+        rgba(220,38,38,.04) 0px, rgba(220,38,38,.04) 1px,
+        transparent 1px, transparent 4px
+      );
+      font-family: 'Courier New', Courier, monospace;
+      color: #f87171;
+      min-height: 100vh;
+    }
+
+    #mws-threat { text-align: center; }
+
+    #screen-malware h1 {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 900;
+      color: #dc2626;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      text-shadow: 0 0 14px rgba(220,38,38,.7);
+      margin-bottom: 10px;
+    }
+
+    #screen-malware .mws-sub {
+      font-size: .9rem;
+      color: #fca5a5;
+      margin-bottom: 32px;
+      letter-spacing: .05em;
+    }
+
+    .mws-dl-wrap {
+      width: min(480px, 90vw);
+      text-align: left;
+      margin: 0 auto 28px;
+    }
+
+    .mws-dl-label {
+      font-size: .8rem;
+      color: #f59e0b;
+      margin-bottom: 6px;
+      letter-spacing: .05em;
+    }
+
+    .mws-dl-track {
+      height: 10px;
+      background: #1a0000;
+      border: 1px solid #7f1d1d;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    .mws-dl-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #dc2626, #f97316);
+      border-radius: 2px;
+      box-shadow: 0 0 8px #dc2626;
+      transition: width .18s linear;
+    }
+
+    .mws-dl-stats {
+      font-size: .73rem;
+      color: #ef4444;
+    }
+
+    .mws-mini-log {
+      width: min(480px, 90vw);
+      height: 120px;
+      overflow: hidden;
+      font-size: .75rem;
+      line-height: 1.7;
+      color: #f87171;
+      text-align: left;
+      margin: 0 auto;
+    }
+
+    .mws-mini-line {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #mws-reveal { display: none; width: 100%; }
+    #mws-reveal.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============================================================
+       SCREEN 0 — ENROLLMENT
+  ============================================================ -->
+  <section id="screen-enroll" class="screen screen--active" aria-label="Enrollment screen">
+    <div class="enroll-card">
+
+      <div class="enroll-logo">
+        <div class="enroll-logo-icon">Py</div>
+        <div class="enroll-logo-text">
+          Pyton Learning Portal
+          <small>Secure Student Enrollment</small>
+        </div>
+      </div>
+
+      <h2>Create your account</h2>
+      <p class="enroll-sub">
+        Enroll to access today&rsquo;s classroom activity and track your progress.
+      </p>
+
+      <form id="enroll-form" novalidate autocomplete="off">
+        <div class="form-group">
+          <label for="enroll-username">Username</label>
+          <input
+            type="text"
+            id="enroll-username"
+            name="username"
+            placeholder="Choose a username"
+            autocomplete="off"
+            maxlength="40"
+            required
+          />
+          <div class="enroll-error-msg" id="err-username"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="enroll-password">Password</label>
+          <input
+            type="password"
+            id="enroll-password"
+            name="password"
+            placeholder="Create a password"
+            autocomplete="new-password"
+            maxlength="64"
+            required
+          />
+          <div class="enroll-error-msg" id="err-password"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="enroll-confirm">Confirm Password</label>
+          <input
+            type="password"
+            id="enroll-confirm"
+            name="confirm"
+            placeholder="Repeat your password"
+            autocomplete="new-password"
+            maxlength="64"
+            required
+          />
+          <div class="enroll-error-msg" id="err-confirm"></div>
+        </div>
+
+        <button type="submit" class="btn-enroll">Enroll &rarr;</button>
+      </form>
+
+      <p class="enroll-fine">
+        By enrolling you agree to the
+        <a href="#" onclick="return false;">Terms of Service</a> and
+        <a href="#" onclick="return false;">Privacy Policy</a>.
+      </p>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       SCREEN 1 — LANDING
+  ============================================================ -->
+  <section id="screen-landing" class="screen" aria-label="Landing screen">
+    <div class="card">
+
+      <div class="badge">
+        <span class="badge-dot" aria-hidden="true"></span>
+        Pyton Learning Activity
+      </div>
+
+      <h1>Pyton <span>Practice</span> Portal</h1>
+      <p class="subtitle">Lesson activity: <span style="font-style:normal">variables</span> &amp; user input</p>
+
+      <form id="landing-form" novalidate>
+        <div class="form-group">
+          <label for="nickname">Nickname or first name</label>
+          <input
+            type="text"
+            id="nickname"
+            name="nickname"
+            placeholder="e.g. Alex"
+            autocomplete="off"
+            maxlength="40"
+            required
+            aria-required="true"
+          />
+        </div>
+
+        <button type="submit" class="btn-start">Start Activity</button>
+      </form>
+
+      <p class="resource-link-wrap">
+        <a href="#"
+           onclick="event.preventDefault(); showMalwareScreen();"
+           class="resource-link"
+           title="https://docs.python.org/3/tutorial/variables.pdf">&#128203;&nbsp; Pyton Variables &mdash; Quick Reference (PDF)</a>
+      </p>
+
+      <p class="fine-print">
+        No data is collected, stored, or transmitted by this page.
+      </p>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       SCREEN 2 — FAKE HACK / TERMINAL
+  ============================================================ -->
+  <section id="screen-hack" class="screen" aria-label="Simulation screen" aria-live="polite">
+
+    <!-- Fullscreen malware overlay — shown on top of the running terminal -->
+    <div id="malware-overlay" role="alertdialog" aria-label="Malware installation overlay">
+
+      <!-- Top alert bar -->
+      <div class="mw-topbar">
+        <span class="mw-topbar-blink">⚠</span>
+        SECURITY THREAT DETECTED — YOUR COMPUTER IS AT RISK
+        <span class="mw-topbar-blink">⚠</span>
+      </div>
+
+      <!-- Body -->
+      <div class="mw-body" id="mw-body">
+
+        <!-- Big headline -->
+        <div class="mw-headline">
+          <div class="mw-headline-icon">⛔</div>
+          <div>
+            <h2>CRITICAL: Malicious software has been installed on your computer</h2>
+            <p>
+              Our scanner detected <strong id="mw-threat-count">3</strong> active threats. Your browsing data,
+              passwords, and files are currently being transmitted to a remote server.
+              Immediate removal is required to prevent further damage.
+            </p>
+          </div>
+        </div>
+
+        <!-- Fake scan table -->
+        <table class="mw-scan-table" aria-label="Scan results">
+          <thead>
+            <tr><th>Threat Name</th><th>Type</th><th>Location</th><th>Severity</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Trojan.Win32.KeyLogger</td><td>Keylogger</td><td>C:\Windows\Temp\svch0st.exe</td><td class="sev-high">HIGH</td></tr>
+            <tr><td>Spyware.BrowserHijack</td><td>Spyware</td><td>C:\Users\User\AppData\chrm_ext.dll</td><td class="sev-high">HIGH</td></tr>
+            <tr><td>Adware.PopupGen.3B</td><td>Adware</td><td>C:\Program Files\updater32.exe</td><td class="sev-med">MEDIUM</td></tr>
+          </tbody>
+        </table>
+
+        <!-- Installer progress -->
+        <div class="mw-installer">
+          <div class="mw-installer-title" id="mw-inst-title">Installing: AntiVirus Pro 2026 &mdash; Preparing...</div>
+          <div class="mw-inst-track"><div class="mw-inst-fill" id="mw-inst-fill"></div></div>
+          <div class="mw-inst-label" id="mw-inst-label">Initializing installer... 0%</div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="mw-btn-row">
+          <button class="mw-btn-download" id="mw-btn-dl">⬇ DOWNLOAD REMOVAL TOOL</button>
+          <button class="mw-btn-skip" id="mw-btn-skip">Skip (not recommended)</button>
+        </div>
+
+        <!-- Secondary alert banners inserted here by JS -->
+        <div id="mw-banners"></div>
+
+      </div>
+
+      <!-- Legacy elements hidden but kept for JS compatibility -->
+      <div class="mw-title" id="mw-dl-label"></div>
+      <div class="mw-sub" id="mw-dl-stats"></div>
+      <div class="mw-mini-log" id="mw-mini-log"></div>
+
+    </div>
+
+    <!-- Fake dialog overlay layer -->
+    <div id="dialog-layer" class="dialog-layer"></div>
+
+    <div class="warning-banner" role="alert">
+      ⚠ session monitor active | sys://breach_monitor v4.2
+    </div>
+
+    <div class="term-body">
+      <div class="term-header">
+        SYS://BREACH_MONITOR v4.2 &nbsp;|&nbsp; SESSION ACTIVE &nbsp;|&nbsp;
+        <span id="term-clock">00:00:00</span>
+      </div>
+
+      <!-- Log output area -->
+      <div id="log-container" class="log-container" role="log" aria-label="Terminal log"></div>
+      <span class="cursor" aria-hidden="true"></span>
+
+      <!-- Terminal text progress bar -->
+      <div class="progress-wrap" aria-hidden="true">
+        <div id="progress-label" class="progress-label">[............................]   0%  INITIALIZING...</div>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- ============================================================
+       SCREEN 3 — REVEAL
+  ============================================================ -->
+  <section id="screen-reveal" class="screen" aria-label="Reveal screen">
+    <div class="reveal-card">
+
+      <span class="reveal-badge">Սիմուլյացիան ավարտված է</span>
+
+      <h2>Կիբերանվտանգության սիմուլյացիան ավարտվեց</h2>
+
+      <!-- "Nothing happened" reassurance -->
+      <div class="safe-strip" role="status">
+        <p>
+          ✔ Ոչ մի տվյալ չի հավաքագրվել:<br />
+          ✔ Ոչ մի ֆայլ չի ներբեռնվել:<br />
+          ✔ Ոչինչ ոչ մի տեղ չի ուղարկվել:<br />
+          ✔ Ձեր սարքին որևէ միջամտություն չի եղել:
+        </p>
+      </div>
+
+      <p class="explain" id="reveal-explain">
+        <!-- filled in by JS so the user's nickname can be included safely -->
+      </p>
+
+      <ul class="lessons" aria-label="Կիբերանվտանգության խորհուրդներ">
+        <li><strong>Ստուգեք ուղարկողին.</strong> Ո՞վ է իրականում ձեզ ուղարկել այս հղումը:</li>
+        <li><strong>Ուսումնասիրեք հասցեն (URL).</strong> Արդյո՞ք դոմեյնը ճիշտ տեսք ունի:</li>
+        <li><strong>Դադար տվեք նախքան որևէ բան գրելը.</strong> Նույնիսկ մականունը կարող է օգտագործվել իրական հարձակումն անհատականացնելու համար:</li>
+        <li><strong>Հարցրեք ուսուցչին կամ վստահելի մեծահասակին,</strong> երբ ինչ-որ բան այն չէ:</li>
+        <li><strong>Ֆիշինգը սովորական տեսք ունի</strong> — այն միշտ չէ, որ վախենալու կամ ակնհայտ է:</li>
+      </ul>
+
+      <button class="btn-restart" id="btn-restart" type="button">
+        ↺ &nbsp; Վերսկսել սիմուլյացիան
+      </button>
+
+      <p class="footer-note">
+        Այս էջը չի պարունակում հետագծում (tracking), վերլուծություն (analytics),
+        քուքիներ (cookies) կամ ցանցային հարցումներ:
+        Այն ամբողջությամբ աշխատում է ձեր բրաուզերի ներսում:
+      </p>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       SCREEN 4 — MALWARE DOWNLOAD (merged from malware.html)
+  ============================================================ -->
+  <section id="screen-malware" class="screen" aria-label="Malware download screen">
+
+    <!-- Threat / download phase -->
+    <div id="mws-threat">
+      <h1>Malware Installing&hellip;</h1>
+      <p class="mws-sub">CRITICAL THREAT DETECTED &mdash; SYSTEM COMPROMISED</p>
+
+      <div class="mws-dl-wrap">
+        <div class="mws-dl-label" id="mws-dl-label">DOWNLOADING: keylogger_x64.exe &nbsp;|&nbsp; 0%</div>
+        <div class="mws-dl-track"><div class="mws-dl-fill" id="mws-dl-fill"></div></div>
+        <div class="mws-dl-stats" id="mws-dl-stats">0 KB / 2.8 MB &nbsp;&mdash;&nbsp; 0 KB/s</div>
+      </div>
+
+      <div class="mws-mini-log" id="mws-mini-log" role="log" aria-label="Threat log"></div>
+    </div>
+
+    <!-- Reveal phase (hidden until download finishes) -->
+    <div id="mws-reveal">
+      <div class="reveal-card" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-serif;">
+        <span class="reveal-badge">&#9888; You Clicked a Suspicious Link</span>
+        <h2 style="color:#f1f5f9;margin-bottom:16px">Drive-By Download &mdash; Simulation</h2>
+
+        <div class="safe-strip" role="status">
+          <p>
+            &#10003; Nothing was downloaded.<br />
+            &#10003; No malware was installed.<br />
+            &#10003; Your device is completely safe.
+          </p>
+        </div>
+
+        <p class="explain">
+          You clicked a link that looked like a helpful study resource
+          (<em>"Pyton Variables &mdash; Quick Reference (PDF)"</em>).
+          In a real attack, that click could have silently downloaded a
+          keylogger, ransomware, or spyware &mdash; no warning, no prompt.
+          <br /><br />
+          This is called a <strong>drive-by download</strong>. Attackers
+          disguise malicious files as PDFs, cheat sheets, or lesson notes.
+        </p>
+
+        <ul class="lessons">
+          <li><strong>Never click download links</strong> from pages you didn&rsquo;t navigate to yourself.</li>
+          <li><strong>PDF links do not need you to &ldquo;allow&rdquo; anything</strong> &mdash; real PDFs open directly.</li>
+          <li><strong>Check the file extension</strong> before opening anything downloaded.</li>
+          <li><strong>Ask a teacher</strong> before downloading files during a lesson.</li>
+        </ul>
+
+        <button class="btn-restart" id="mws-btn-close" type="button">&#8592; &nbsp; Return</button>
+
+        <p class="footer-note">
+          This page contains no real downloads, no tracking, and no malware.
+          It is a classroom cybersecurity simulation only.
+        </p>
+      </div>
+    </div>
+
+  </section>
+
+
+  <script>
+    /* ===========================================================
+       CONFIGURATION — edit these to customise the simulation
+    =========================================================== */
+
+    // Delay (ms) between individual log lines appearing
+    const LINE_INTERVAL_MS       = 75;
+
+    // Duration the progress bar takes to reach 100% (ms) — 1 minute
+    // Terminal logs and teacher shortcut (Ctrl+Shift+R) run indefinitely after
+    const TOTAL_HACK_DURATION_MS = 60000;
+
+    // Progress bar update interval (ms)
+    const PROGRESS_INTERVAL_MS   = 500;
+
+    // Maximum log lines kept in the DOM at once (older ones are removed)
+    const MAX_LOG_LINES          = 250;
+
+    // Width of the text progress bar in characters
+    const BAR_WIDTH              = 28;
+
+
+    /* ===========================================================
+       RANDOM HELPERS
+    =========================================================== */
+    const rInt  = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+    const rHex  = n  => [...Array(n)].map(() => rInt(0,15).toString(16)).join('');
+    const rIP   = () => `${rInt(10,254)}.${rInt(0,255)}.${rInt(0,255)}.${rInt(1,254)}`;
+    const rMAC  = () => [...Array(6)].map(() => rHex(2)).join(':');
+    const rPick = arr => arr[rInt(0, arr.length - 1)];
+    const rKB   = () => `${rInt(1, 999)}.${rInt(0,9)} KB`;
+    const rPort = () => rPick([443, 8443, 8080, 9000, 4443, 53, 6667, 2222]);
+
+
+    /* ===========================================================
+       STATIC OPENING SEQUENCE
+       Printed first, in order. NICK is replaced with the entered
+       nickname at runtime; SESSION / TZ are randomised per run.
+    =========================================================== */
+    const OPENING_LINES = [
+      "initializing breach monitor v4.2...",
+      "attaching to active browser session...",
+      "session id: SESSION",
+      "browser fingerprint scan started",
+      "user-agent: Chrome/124.0.0.0 (macOS 14.4)",
+      "platform: macOS Darwin x86_64",
+      "screen: 1440x900 @ 2x DPR",
+      "timezone offset: UTC-TZ",
+      "language: en-US",
+      "enumerating DOM form fields...",
+      "  form[0]: id='landing-form'",
+      "  field[0]: type=text  id=nickname",
+      "  field[0] value: NICK",
+      "input capture complete",
+      "scanning browser storage...",
+      "  localStorage:    0 keys found",
+      "  sessionStorage:  0 keys found",
+      "  indexedDB:       probing...",
+      "  indexedDB:       0 databases found",
+      "cookie jar enumeration started",
+      "  domain: .google.com    — 3 cookies detected",
+      "  domain: .github.com    — 2 cookies detected",
+      "  domain: .youtube.com   — 5 cookies detected",
+      "  domain: .twitter.com   — 4 cookies detected",
+      "  domain: .amazon.com    — 7 cookies detected",
+      "cookie data serialized: 2.1 KB",
+      "payload buffer initialized: 0 bytes",
+      "appending cookie data to payload...",
+      "payload size: 2.1 KB",
+      "establishing remote connection...",
+      "DNS resolution: exfil-c2.net -> 192.0.2.1",
+      "TCP connect 192.0.2.1:443... OK",
+      "TLS 1.3 handshake complete",
+      "certificate: CN=*.exfil-c2.net  VALID",
+      "remote host acknowledged — upload session open",
+    ];
+
+
+    /* ===========================================================
+       CONTINUOUS LOG GENERATOR
+       After the opening sequence, lines are generated from these
+       pools indefinitely until the timer fires.
+       Each pool entry is a function that returns a fresh string.
+    =========================================================== */
+
+    // Named attack phases that cycle in order
+    const PHASE_CYCLE = [
+      "RECON", "ENUMERATION", "DATA_HARVEST",
+      "PAYLOAD_BUILD", "EXFILTRATION",
+      "PERSISTENCE", "CLEANUP", "MONITOR",
+    ];
+
+    const POOL = {
+      RECON: [
+        () => `network interface scan: ${rInt(1,4)} adapter(s) found`,
+        () => `ARP probe: ${rIP()} -> ${rMAC()}`,
+        () => `open port ${rInt(1024,65535)}/${rPick(["tcp","udp"])} — ${rPick(["OPEN","FILTERED","CLOSED"])}`,
+        () => `traceroute hop ${rInt(1,14)}: ${rIP()}  (${rInt(1,80)} ms)`,
+        () => `SSID broadcast: "${rPick(["HomeNetwork","Corp-Guest","AndroidAP","NETGEAR_5G","Sky_EXT","VM_Hub"])}"`,
+        () => `DNS cache entry: ${rPick(["accounts","mail","cdn","api","static"])}.${rPick(["google","apple","microsoft","amazon","cloudflare"])}.com`,
+        () => `OS fingerprint: kernel ${rInt(5,6)}.${rInt(0,19)}.${rInt(0,200)}-generic`,
+        () => `running processes: ${rInt(120,420)} detected`,
+        () => `CPU cores: ${rPick([2,4,6,8,10,12,16])}  RAM: ${rPick([8,16,32,64])} GB`,
+        () => `installed browsers: ${rInt(1,5)} detected`,
+        () => `screen lock timeout: ${rInt(1,30)} min`,
+        () => `proxy settings: ${rPick(["none","auto-detect","manual 127.0.0.1:8080"])}`,
+        () => `bluetooth adapter: ${rPick(["enabled","disabled"])}  paired devices: ${rInt(0,8)}`,
+        () => `USB devices attached: ${rInt(0,6)}`,
+        () => `GPU: ${rPick(["Apple M3","NVIDIA RTX 4060","Intel Iris Xe","AMD Radeon RX 7600"])} — detected`,
+        () => `battery: ${rInt(10,100)}%  status: ${rPick(["charging","discharging","full"])}`,
+      ],
+      ENUMERATION: [
+        () => `cookie[${rInt(0,25)}]: name=${rHex(8)}  domain=.${rPick(["google","amazon","github","youtube","reddit"])}.com  expires=${rInt(1,365)}d`,
+        () => `autofill entry ${rInt(0,60)}: type=${rPick(["email","name","address","phone","org"])} — flagged`,
+        () => `browser extension[${rInt(0,20)}]: id=${rHex(16)} — catalogued`,
+        () => `saved credential slot ${rInt(0,12)} detected`,
+        () => `form history: ${rInt(0,300)} entries scanned`,
+        () => `download history: ${rInt(0,80)} items`,
+        () => `visited URL: https://${rPick(["mail","drive","docs","accounts","photos"])}.${rPick(["google","microsoft","apple"])}.com/${rHex(8)}`,
+        () => `localStorage key: '${rPick(["user","token","prefs","cache","sid","authz"])}_${rHex(4)}'  length=${rInt(10,600)}`,
+        () => `IndexedDB store '${rPick(["keyval","entries","data","records","objects"])}' — ${rInt(0,300)} records`,
+        () => `timing entropy sample: ${rInt(100,9999)}.${rInt(0,999)} µs`,
+        () => `browser history depth: ${rInt(100,5000)} entries`,
+        () => `active tabs: ${rInt(1,30)} detected`,
+        () => `permission: ${rPick(["camera","microphone","notifications","geolocation"])} — ${rPick(["granted","denied","prompt"])}`,
+        () => `service worker registrations: ${rInt(0,10)}`,
+        () => `push subscription: ${rPick(["active","none"])}`  ,
+        () => `referrer chain: ${rInt(1,8)} hops recorded`,
+      ],
+      DATA_HARVEST: [
+        () => `reading cache segment 0x${rHex(6)}  (${rInt(1,512)} KB)`,
+        () => `extracting DOM snapshot node[${rInt(0,800)}]...`,
+        () => `serializing form data: ${rInt(12,4096)} bytes`,
+        () => `clipboard probe attempt ${rInt(1,5)}: ${rPick(["blocked","timeout","empty","success"])}`,
+        () => `canvas fingerprint: 0x${rHex(16)}`,
+        () => `WebGL vendor: ${rPick(["NVIDIA","Intel","AMD","Apple"])} — captured`,
+        () => `audio context hash: ${rInt(100,200)}.${rInt(0,9999999)}`,
+        () => `screenshot attempt: permission denied`,
+        () => `keyboard layout inferred: ${rPick(["QWERTY","AZERTY","Dvorak","QWERTZ"])}`,
+        () => `payload buffer: appending ${rInt(16,2048)} bytes`,
+        () => `data chunk assembled: ${rKB()}`,
+        () => `compressing payload: ratio ${(Math.random()*0.4+0.3).toFixed(2)}x`,
+        () => `font enumeration: ${rInt(40,300)} installed fonts fingerprinted`,
+        () => `media devices: ${rInt(0,5)} camera(s)  ${rInt(0,3)} microphone(s) detected`,
+        () => `WebRTC local IP probe: ${rIP()}`,
+        () => `connection type: ${rPick(["wifi","ethernet","4g","5g"])}  rtt: ${rInt(5,200)}ms`,
+        () => `network downlink: ${(Math.random()*100+1).toFixed(1)} Mbps`,
+        () => `hardware concurrency: ${rPick([2,4,6,8,12,16])} logical cores`,
+        () => `device memory: ${rPick([2,4,8,16,32])} GB reported`,
+      ],
+      PAYLOAD_BUILD: [
+        () => `staging archive: ${rHex(8)}.enc`,
+        () => `encrypting chunk ${rInt(1,20)} with AES-256-GCM`,
+        () => `HMAC-SHA256 tag: ${rHex(32)}`,
+        () => `base64 encoding block ${rInt(1,50)}/${rInt(51,100)}`,
+        () => `total payload: ${rKB()}`,
+        () => `checksum CRC32: 0x${rHex(8)}`,
+        () => `fragmenting into ${rInt(2,12)} chunks`,
+        () => `chunk[${rInt(0,11)}] size: ${rInt(512,8192)} bytes — queued`,
+        () => `header v2 flags: 0x${rHex(2)}`,
+        () => `payload sealed — queued for upload`,
+        () => `IV: ${rHex(16)}`,
+        () => `salt: ${rHex(16)}`,
+        () => `key derivation: PBKDF2  iterations=${rInt(10000,100000)}`,
+        () => `archive integrity verified: ${rHex(8)}`,
+      ],
+      EXFILTRATION: [
+        () => `connecting to relay ${rInt(1,6)}: ${rIP()}:${rPort()}`,
+        () => `HTTPS POST /collect/${rHex(12)} — ${rInt(100,9999)} bytes`,
+        () => `server 200 OK  (${rInt(20,300)} ms)`,
+        () => `retry ${rInt(1,4)}: ${rPick(["timeout","ECONNRESET","EHOSTUNREACH"])} — retrying...`,
+        () => `chunk ${rInt(1,8)}/${rInt(8,14)} uploaded: ${rKB()}`,
+        () => `transfer rate: ${rInt(10,900)} KB/s`,
+        () => `bytes sent total: ${rKB()}`,
+        () => `CDN relay: ${rIP()} -> ${rIP()}`,
+        () => `exfil token: ${rHex(32)}`,
+        () => `receipt hash: ${rHex(16)}`,
+        () => `multiplexed stream ${rInt(1,4)}: ${rInt(1,16)} active`,
+        () => `response latency: ${rInt(10,500)} ms`,
+        () => `connection reuse: keep-alive  (${rInt(1,99)} req remaining)`,
+      ],
+      PERSISTENCE: [
+        () => `registering service worker: scope /${rHex(8)}/`,
+        () => `caching beacon: https://${rIP()}/b/${rHex(8)}`,
+        () => `scheduled task interval: ${rInt(10,3600)} s`,
+        () => `heartbeat -> ${rIP()}  ${rInt(10,200)} ms`,
+        () => `remote DB record id: ${rHex(12)}`,
+        () => `re-check interval: ${rInt(1,24)} h`,
+        () => `fallback relay: ${rIP()}:${rInt(1024,65535)}`,
+        () => `keepalive seq=${rInt(1,9999)} ack=${rInt(1,9999)}`,
+        () => `watch trigger registered: 'visibilitychange'`,
+        () => `watch trigger registered: 'focus'`,
+      ],
+      CLEANUP: [
+        () => `removing trace ${rInt(1,10)}/${rInt(10,18)}`,
+        () => `wiping buffer 0x${rHex(6)}`,
+        () => `overwriting memory 0x${rHex(8)}-0x${rHex(8)}`,
+        () => `null-filling staging file: ${rHex(8)}.tmp`,
+        () => `flushing entropy pool`,
+        () => `session token invalidated`,
+        () => `0 open sockets remaining`,
+        () => `GC: freed ${rInt(10,600)} KB`,
+        () => `temp dir purged: ${rInt(0,20)} files removed`,
+        () => `log rotation: ${rInt(1,5)} old entries pruned`,
+      ],
+      MONITOR: [
+        () => `idle — awaiting next trigger`,
+        () => `heartbeat: alive | session=${rHex(8)}`,
+        () => `watchdog: target=${rIP()}  latency=${rInt(5,200)}ms`,
+        () => `mutation on #${rPick(["main","root","app","content","body"])} — ${rInt(1,5)} node(s)`,
+        () => `user event: ${rPick(["click","keydown","scroll","focus","blur","input"])}`,
+        () => `page visibility: ${rPick(["visible","hidden"])}`,
+        () => `idle counter: ${rInt(1,300)} s`,
+        () => `re-scan in ${rInt(5,120)} s`,
+        () => `ping -> ${rIP()}  ${rInt(1,60)}ms`,
+        () => `active connections: ${rInt(1,6)}`,
+      ],
+    };
+
+
+    /* ===========================================================
+       DOM REFERENCES
+    =========================================================== */
+    const screenEnroll  = document.getElementById("screen-enroll");
+    const screenLanding = document.getElementById("screen-landing");
+    const screenHack    = document.getElementById("screen-hack");
+    const screenReveal  = document.getElementById("screen-reveal");
+    const landingForm   = document.getElementById("landing-form");
+    const nicknameInput = document.getElementById("nickname");
+    const logContainer  = document.getElementById("log-container");
+    const progressLabel = document.getElementById("progress-label");
+    const revealExplain = document.getElementById("reveal-explain");
+    const btnRestart    = document.getElementById("btn-restart");
+    const termClock     = document.getElementById("term-clock");
+    const screenMalware = document.getElementById("screen-malware");
+
+
+    /* ===========================================================
+       UTILITY — show only one screen at a time
+    =========================================================== */
+    function showScreen(screenEl) {
+      [screenEnroll, screenLanding, screenHack, screenReveal, screenMalware].forEach(s => {
+        s.classList.remove("screen--active");
+      });
+      screenEl.classList.add("screen--active");
+    }
+
+
+    /* ===========================================================
+       ENROLLMENT FORM
+    =========================================================== */
+    document.getElementById("enroll-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const usernameEl = document.getElementById("enroll-username");
+      const passwordEl = document.getElementById("enroll-password");
+      const confirmEl  = document.getElementById("enroll-confirm");
+      const errUser    = document.getElementById("err-username");
+      const errPass    = document.getElementById("err-password");
+      const errConf    = document.getElementById("err-confirm");
+
+      // Clear previous errors
+      [usernameEl, passwordEl, confirmEl].forEach(el => el.classList.remove("input-error"));
+      [errUser, errPass, errConf].forEach(el => el.textContent = "");
+
+      let valid = true;
+
+      if (usernameEl.value.trim().length < 2) {
+        errUser.textContent = "Username must be at least 2 characters.";
+        usernameEl.classList.add("input-error");
+        valid = false;
+      }
+
+      if (passwordEl.value.length < 6) {
+        errPass.textContent = "Password must be at least 6 characters.";
+        passwordEl.classList.add("input-error");
+        valid = false;
+      }
+
+      if (confirmEl.value !== passwordEl.value) {
+        errConf.textContent = "Passwords do not match.";
+        confirmEl.classList.add("input-error");
+        valid = false;
+      }
+
+      if (!valid) return;
+
+      // Pre-fill the nickname on the landing page with the chosen username
+      nicknameInput.value = usernameEl.value.trim();
+
+      // Proceed to the landing / activity page
+      showScreen(screenLanding);
+      nicknameInput.focus();
+    });
+
+
+    /* ===========================================================
+       LANDING FORM SUBMIT
+    =========================================================== */
+    landingForm.addEventListener("submit", function (e) {
+      e.preventDefault(); // never submit to a server
+
+      const rawNickname = nicknameInput.value.trim();
+      // Sanitise nickname for display: strip HTML, keep max 40 chars
+      const safeNickname = rawNickname.replace(/[<>&"']/g, "").slice(0, 40) || "Student";
+
+      startHackScreen(safeNickname);
+    });
+
+    // Also allow pressing Enter inside the input
+    nicknameInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") landingForm.requestSubmit();
+    });
+
+
+    /* ===========================================================
+       HACK SCREEN
+    =========================================================== */
+
+    // Active timer references — stored so restart can cancel them cleanly
+    let _intervals = [];
+    let _endTimer  = null;
+
+    // Nickname of the current student — set when hack screen starts
+    let _currentNickname = "";
+
+    function startHackScreen(nickname) {
+      // Cancel any timers from a prior run
+      _intervals.forEach(clearInterval);
+      _intervals = [];
+      if (_endTimer) { clearTimeout(_endTimer); _endTimer = null; }
+
+      _currentNickname = nickname;
+
+      // Reset UI
+      logContainer.innerHTML = "";
+      renderProgressBar(0, "INITIALIZING...");
+      showScreen(screenHack);
+
+      const startTime = Date.now();
+
+      // Three randomised thresholds: ~16%, ~43%, ~67%
+      const dlgThresh1 = rInt(14, 18);
+      const dlgThresh2 = rInt(41, 45);
+      const dlgThresh3 = rInt(65, 69);
+      let   wave1Done  = false;
+      let   wave2Done  = false;
+      let   wave3Done  = false;
+
+      // Reset dialog state for this run
+      dlgCloseCount = 0;
+      document.getElementById("dialog-layer").innerHTML = "";
+
+      // ---- Build opening sequence with run-time substitutions ----
+      const sessionId = rHex(16);
+      const tzOffset  = String(rInt(0, 11)).padStart(2, "0");
+      const openingLines = OPENING_LINES.map(t =>
+        t.replace("SESSION", sessionId)
+         .replace("TZ", tzOffset)
+         .replace("NICK", `"${nickname}"`)
+      );
+
+      let lineIndex   = 0;  // overall line counter (opening + generated)
+      let phaseIndex  = 0;  // index into PHASE_CYCLE for generated lines
+      let genCount    = 0;  // lines generated after the opening sequence
+      const HEADER_EVERY = 20; // insert a phase-header line every N generated lines
+
+      // ---- Line printer ----
+      const lineTimer = setInterval(() => {
+        if (lineIndex < openingLines.length) {
+          // Still in the static opening sequence
+          appendLogLine(openingLines[lineIndex]);
+        } else {
+          // Continuous random generation — runs until the end timer fires
+          if (genCount > 0 && genCount % HEADER_EVERY === 0) {
+            // Advance phase and print a header
+            phaseIndex = (phaseIndex + 1) % PHASE_CYCLE.length;
+            appendLogLine(`--- [ PHASE: ${PHASE_CYCLE[phaseIndex]} ] ---`);
+          } else {
+            const pool = POOL[PHASE_CYCLE[phaseIndex]];
+            appendLogLine(rPick(pool)());
+          }
+          genCount++;
+        }
+        lineIndex++;
+        trimLogDOM();
+      }, LINE_INTERVAL_MS);
+
+      // ---- Progress bar ----
+      const STATUS_LABELS = [
+        "INITIALIZING...",    // 0-12%
+        "SCANNING...",        // 13-25%
+        "ENUMERATING...",     // 26-37%
+        "HARVESTING DATA...", // 38-50%
+        "BUILDING PAYLOAD...",// 51-62%
+        "UPLOADING...",       // 63-75%
+        "EXFILTRATING...",    // 76-87%
+        "FINALIZING...",      // 88-100%
+      ];
+      const progressTimer = setInterval(() => {
+        const pct     = Math.min(Math.round(((Date.now() - startTime) / TOTAL_HACK_DURATION_MS) * 100), 100);
+        const lblIdx  = Math.min(Math.floor(pct / (100 / STATUS_LABELS.length)), STATUS_LABELS.length - 1);
+        renderProgressBar(pct, STATUS_LABELS[lblIdx]);
+
+        // Wave 1 — ~16%
+        if (!wave1Done && pct >= dlgThresh1) {
+          wave1Done = true;
+          appendLogLine("!!! process escape attempt: injecting overlay handlers");
+          appendLogLine("system alert overlay rendered — awaiting user interaction");
+          spawnDialogWave(3, 0);
+        }
+
+        // Wave 2 — ~43%
+        if (!wave2Done && pct >= dlgThresh2) {
+          wave2Done = true;
+          appendLogLine("!!! secondary alert cascade triggered");
+          spawnDialogWave(4, 10);
+        }
+
+        // Wave 3 — ~67%
+        if (!wave3Done && pct >= dlgThresh3) {
+          wave3Done = true;
+          appendLogLine("!!! critical: final payload injection — alert storm");
+          spawnDialogWave(5, 20);
+        }
+
+        if (pct >= 100) clearInterval(progressTimer);
+      }, PROGRESS_INTERVAL_MS);
+
+      // ---- Clock ----
+      const clockTimer = startClock(startTime);
+
+      _intervals.push(lineTimer, progressTimer, clockTimer);
+
+      // ---- No automatic reveal — teacher triggers it manually with Ctrl+Shift+R ----
+      // (_endTimer is kept null; the terminal and logs run until the teacher is ready)
+    }
+
+    // Append a log line (string or {text,cls} object) and auto-scroll
+    function appendLogLine(lineOrStr) {
+      const text = typeof lineOrStr === "string" ? lineOrStr : lineOrStr.text;
+      const div  = document.createElement("div");
+      div.className = "log-line";
+      div.textContent = text;
+      logContainer.appendChild(div);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    // Keep DOM lean by pruning oldest entries
+    function trimLogDOM() {
+      while (logContainer.childElementCount > MAX_LOG_LINES) {
+        logContainer.removeChild(logContainer.firstChild);
+      }
+    }
+
+    // Render a terminal-style text progress bar:
+    // [########....................] 42%  HARVESTING DATA...
+    function renderProgressBar(pct, status) {
+      const filled = Math.round(pct / 100 * BAR_WIDTH);
+      const bar    = "#".repeat(filled) + ".".repeat(BAR_WIDTH - filled);
+      progressLabel.textContent = `[${bar}] ${String(pct).padStart(3, " ")}%  ${status || ""}`;
+    }
+
+    // Elapsed clock in the terminal header
+    function startClock(startTime) {
+      return setInterval(() => {
+        const e = Date.now() - startTime;
+        const s = Math.floor(e / 1000) % 60;
+        const m = Math.floor(e / 60000) % 60;
+        const h = Math.floor(e / 3600000);
+        termClock.textContent = [h, m, s].map(n => String(n).padStart(2, "0")).join(":");
+      }, 250);
+    }
+
+
+    /* ===========================================================
+       FAKE DIALOG SYSTEM
+    =========================================================== */
+
+    // How many times a dialog × has been clicked so far this run
+    let dlgCloseCount = 0;
+
+    // After this many × clicks, the next × triggers the malware download screen
+    const DLG_ESCAPE_AFTER = 7;
+
+    // Threat variants for dialog content
+    const DLG_VARIANTS = [
+      { title: "Security Alert",           threat: "TROJAN.WIN32.KEYLOGGER.GH",     file: "C:\\Windows\\Temp\\svch0st.exe",           status: "ACTIVE — SPREADING" },
+      { title: "Windows Defender Alert",   threat: "SPYWARE.RANSOM.CRYPTLOCK.3B",   file: "C:\\Users\\User\\AppData\\malw4re.dll",    status: "UPLOADING DATA" },
+      { title: "Malware Scan — Critical",  threat: "ROOTKIT.KERNEL.STEALTHX.V2",   file: "C:\\System32\\drivers\\exploit32.sys",    status: "EVADING DETECTION" },
+      { title: "Firewall Breach Detected", threat: "WORM.NET.PROPAGATE.GEN",        file: "C:\\Program Files\\payload_loader.exe",  status: "REPLICATING" },
+      { title: "Remote Access Warning",    threat: "BACKDOOR.WIN32.REMOTEACCESS",   file: "C:\\Windows\\System32\\svchost32.exe",   status: "CONNECTED TO C2" },
+      { title: "Data Exfiltration Alert",  threat: "INFOSTEALER.BROWSER.CHROMEX",   file: "C:\\Users\\User\\AppData\\chrm_ext.dll",  status: "EXFILTRATING" },
+    ];
+
+    // Warning body text pool — one is picked at random per dialog
+    const DLG_WARNINGS = [
+      "Your system is sending data to a remote server.<br>Immediate action required.",
+      "Sensitive files detected. Upload in progress.<br>Click below to stop transmission.",
+      "Unauthorized remote session active.<br>Your keystrokes are being recorded.",
+      "Critical system files have been modified.<br>Registry changes detected.",
+      "Browser credential cache exposed.<br>Passwords may have been compromised.",
+      "Network traffic anomaly: outbound volume " + rInt(1,99) + " MB. Click to block.",
+    ];
+
+    // Action button label pool
+    const DLG_BTN_LABELS = [
+      "Remove Threats Now",
+      "Terminate Process",
+      "Block Connection",
+      "Quarantine Files",
+      "Fix Issues",
+      "Run System Repair",
+    ];
+
+    // Scan path pool
+    const DLG_SCAN_PATHS = [
+      "C:\\Users\\Student\\",
+      "C:\\Windows\\System32\\",
+      "C:\\Program Files\\Chrome\\",
+      "C:\\Users\\Student\\AppData\\Roaming\\",
+      "C:\\Windows\\Temp\\",
+    ];
+
+    // Spawn `count` dialogs staggered by 700ms each, starting at `waveIndex`
+    function spawnDialogWave(count, waveIndex) {
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => spawnDialog(waveIndex + i), i * 700);
+      }
+    }
+
+    // Create and insert one fake dialog window
+    function spawnDialog(variantSeed) {
+      const layer = document.getElementById("dialog-layer");
+      const v     = DLG_VARIANTS[variantSeed % DLG_VARIANTS.length];
+
+      // Randomise width (280–460px) and font size per dialog
+      const dlgW  = rInt(280, 460);
+      const fSize = (rInt(68, 80) / 100).toFixed(2) + "rem";
+
+      // Randomise position
+      const screenW = layer.offsetWidth  || window.innerWidth;
+      const screenH = layer.offsetHeight || window.innerHeight;
+      const top     = rInt(40, Math.max(60, screenH - 280));
+      const left    = rInt(10, Math.max(15, screenW - dlgW - 10));
+
+      // Pick random content
+      const warnText  = rPick(DLG_WARNINGS);
+      const btnLabel  = rPick(DLG_BTN_LABELS);
+      const scanPath  = rPick(DLG_SCAN_PATHS);
+
+      const dlg = document.createElement("div");
+      dlg.className  = "fdlg";
+      dlg.style.top  = top  + "px";
+      dlg.style.left = left + "px";
+      dlg.style.width     = dlgW + "px";
+      dlg.style.fontSize  = fSize;
+      dlg.style.zIndex    = 50 + dlgCloseCount;
+
+      dlg.innerHTML = `
+        <div class="fdlg-titlebar">
+          <strong>${v.title}</strong>
+          <button class="fdlg-x" title="Close">&times;</button>
+        </div>
+        <div class="fdlg-body">
+          <div class="fdlg-scan">
+            <div>SCANNING: ${scanPath}</div>
+            <div class="fdlg-threat">THREAT: ${v.threat}</div>
+            <div class="fdlg-file">FILE:   ${v.file}</div>
+            <div class="fdlg-status">STATUS: ${v.status}</div>
+          </div>
+          <div class="fdlg-warn">${warnText}</div>
+          <div class="fdlg-btn-row">
+            <button class="fdlg-btn fdlg-btn-action">${btnLabel}</button>
+            <button class="fdlg-btn fdlg-btn-cancel">Cancel</button>
+          </div>
+        </div>
+      `;
+
+      // × close — spawns more dialogs or shows malware overlay
+      dlg.querySelector(".fdlg-x").addEventListener("click", () => {
+        dlg.remove();
+        dlgCloseCount++;
+        appendLogLine(`user dismissed overlay ${dlgCloseCount} — reinjecting...`);
+        if (dlgCloseCount >= DLG_ESCAPE_AFTER) {
+          showMalwareOverlay();
+        } else {
+          // Immediate small wave + another wave after 5 seconds
+          setTimeout(() => spawnDialogWave(2, dlgCloseCount), 400);
+          setTimeout(() => spawnDialogWave(3, dlgCloseCount + 10), 5000);
+        }
+      });
+
+      // Cancel — same as ×
+      dlg.querySelector(".fdlg-btn-cancel").addEventListener("click", function() {
+        dlg.querySelector(".fdlg-x").click();
+      });
+
+      // Action button — shows malware overlay
+      dlg.querySelector(".fdlg-btn-action").addEventListener("click", () => {
+        showMalwareOverlay();
+      });
+
+      layer.appendChild(dlg);
+    }
+
+
+    /* ===========================================================
+       MALWARE OVERLAY LOGIC
+       Plays a fake install animation in-page, then dismisses itself
+       so the terminal progress bar continues running underneath.
+    =========================================================== */
+
+    const MW_TOTAL_MS = 4500;  // duration of fake install animation
+    const MW_LINE_MS  = 220;   // ms between mini-log lines
+    const MW_BAR_W    = 26;    // chars in text progress bar
+    const MW_KB       = 2800;  // fake file size in KB
+
+    const MW_LINES = [
+      "browser payload hook: active",
+      "writing to %APPDATA%\\Roaming\\svch0st.exe",
+      "connecting to C2 relay...",
+      "TLS handshake complete — upload ready",
+      "enumerating keystrokes buffer...",
+      "screenshot captured: 1 frame",
+      "credential store probe: entries found",
+      "injecting DLL into browser process",
+      "registry key HKCU\\Run written",
+      "persistence hook installed",
+      "payload uploading... chunk 1/4",
+      "payload uploading... chunk 2/4",
+      "payload uploading... chunk 3/4",
+      "payload uploading... chunk 4/4",
+      "upload complete — C2 acknowledged",
+      "cleaning access logs...",
+    ];
+
+    let _mwTimers = [];
+
+    function showMalwareOverlay() {
+      const overlay   = document.getElementById("malware-overlay");
+      const dlgLayer  = document.getElementById("dialog-layer");
+      const instFill  = document.getElementById("mw-inst-fill");
+      const instLabel = document.getElementById("mw-inst-label");
+      const instTitle = document.getElementById("mw-inst-title");
+      const banners   = document.getElementById("mw-banners");
+      const btnDl     = document.getElementById("mw-btn-dl");
+      const btnSkip   = document.getElementById("mw-btn-skip");
+
+      // Clear leftovers
+      dlgLayer.innerHTML = "";
+      banners.innerHTML  = "";
+
+      // Reset installer bar
+      instFill.style.width  = "0%";
+      instLabel.textContent = "Initializing installer... 0%";
+      instTitle.textContent = "Installing: AntiVirus Pro 2026 \u2014 Preparing...";
+
+      overlay.classList.add("active");
+
+      const mwStart = Date.now();
+
+      // Installer stage labels
+      const INST_STAGES = [
+        "Extracting files...",
+        "Registering components...",
+        "Modifying system registry...",
+        "Installing background service...",
+        "Configuring network monitor...",
+        "Finalizing installation...",
+        "Installation complete.",
+      ];
+
+      // Animate installer bar
+      const mwProg = setInterval(() => {
+        const pct   = Math.min(Math.round(((Date.now() - mwStart) / MW_TOTAL_MS) * 100), 100);
+        const stage = INST_STAGES[Math.min(Math.floor(pct / (100 / INST_STAGES.length)), INST_STAGES.length - 1)];
+        instFill.style.width  = pct + "%";
+        instLabel.textContent = `${stage}   ${pct}%`;
+        if (pct >= 100) {
+          instTitle.textContent = "AntiVirus Pro 2026 installed successfully.";
+          clearInterval(mwProg);
+        }
+      }, 100);
+
+      // Secondary alert banners — defined here; scheduled below after mwProg
+      const BANNER_MSGS = [
+        { text: "<strong>Warning:</strong> 14 saved passwords detected in Chrome profile.", delay: 900 },
+        { text: "<strong>Alert:</strong> Webcam accessed by background process svch0st.exe.", delay: 2000 },
+        { text: "<strong>Notice:</strong> 47 MB of data uploaded to 198.51.100.24:443.", delay: 3100 },
+        { text: "<strong>Critical:</strong> Browser session tokens copied to clipboard.", delay: 4200 },
+        { text: "<strong>Warning:</strong> Screen capture initiated by remote process.", delay: 5300 },
+        { text: "<strong>Alert:</strong> Microphone access granted to unknown extension.", delay: 6400 },
+      ];
+
+      _mwTimers.push(mwProg);
+
+      // Schedule banner alerts — stored in _mwTimers so they can all be cancelled together
+      BANNER_MSGS.forEach(({ text, delay }) => {
+        const t = setTimeout(() => {
+          if (!overlay.classList.contains("active")) return; // overlay already dismissed
+          const b = document.createElement("div");
+          b.className = "mw-banner";
+          b.innerHTML = `<span>${text}</span><button class="mw-banner-x" title="Dismiss">&times;</button>`;
+          b.querySelector(".mw-banner-x").onclick = () => b.remove();
+          banners.appendChild(b);
+          b.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }, delay);
+        _mwTimers.push(t);
+      });
+
+      // Helper to cancel everything and hide the overlay
+      function dismissOverlay() {
+        _mwTimers.forEach(id => { clearInterval(id); clearTimeout(id); });
+        _mwTimers = [];
+        overlay.classList.remove("active");
+      }
+
+      // Both buttons jump to the malware download screen
+      btnDl.onclick   = () => { dismissOverlay(); showMalwareScreen(); };
+      btnSkip.onclick = () => { dismissOverlay(); showMalwareScreen(); };
+
+      // Auto-dismiss after animation — terminal resumes underneath
+      const autoHide = setTimeout(() => {
+        dismissOverlay();
+        appendLogLine("--- [ payload install complete \u2014 resuming exfiltration ] ---");
+      }, MW_TOTAL_MS);
+      _mwTimers.push(autoHide);
+    }
+
+
+    /* ===========================================================
+       MALWARE DOWNLOAD SCREEN
+    =========================================================== */
+    const MWS_TOTAL_MS  = 4500;   // fake-download duration (ms)
+    const MWS_LINE_MS   = 200;    // ms between mini-log lines
+    const MWS_TOTAL_KB  = 2800;
+    let   _mwsTimers    = [];     // intervals/timeouts for this screen
+    let   _mwsPrevScreen = null;  // which screen to return to on close
+
+    const MWS_THREAT_LINES = [
+      "browser payload hook: active",
+      () => `writing to %APPDATA%\\Roaming\\${rHex(8)}.exe`,
+      () => `connecting to ${rIP()}:443`,
+      "TLS handshake complete — upload ready",
+      () => `enumerating keystrokes buffer (${rInt(0,99)} events)`,
+      () => `screenshot captured: ${rInt(1,5)} frame(s)`,
+      () => `credential store probe: ${rInt(0,8)} entries found`,
+      "injecting DLL into browser process",
+      () => `registry key HKCU\\Run\\${rHex(6)} written`,
+      "persistence hook installed",
+      () => `payload chunk 1/4: ${rInt(200,800)} KB/s`,
+      () => `payload chunk 2/4: ${rInt(200,800)} KB/s`,
+      () => `payload chunk 3/4: ${rInt(200,800)} KB/s`,
+      () => `payload chunk 4/4: ${rInt(200,800)} KB/s`,
+      "upload complete — C2 acknowledged",
+      "cleaning access logs...",
+    ];
+
+    function showMalwareScreen() {
+      // Remember which screen was active so we can return to it
+      _mwsPrevScreen = screenHack.classList.contains("screen--active") ? screenHack : screenLanding;
+
+      // Reset UI
+      const threat  = document.getElementById("mws-threat");
+      const reveal  = document.getElementById("mws-reveal");
+      const dlFill  = document.getElementById("mws-dl-fill");
+      const dlLabel = document.getElementById("mws-dl-label");
+      const dlStats = document.getElementById("mws-dl-stats");
+      const miniLog = document.getElementById("mws-mini-log");
+
+      threat.style.display  = "";
+      reveal.classList.remove("active");
+      dlFill.style.width    = "0%";
+      dlLabel.textContent   = "DOWNLOADING: keylogger_x64.exe  |  0%";
+      dlStats.textContent   = "0 KB / 2.8 MB  —  0 KB/s";
+      miniLog.innerHTML     = "";
+
+      // Clear any leftover timers from a prior run
+      _mwsTimers.forEach(id => { clearInterval(id); clearTimeout(id); });
+      _mwsTimers = [];
+
+      showScreen(screenMalware);
+
+      const startTime = Date.now();
+
+      // Progress bar interval
+      const progId = setInterval(() => {
+        const pct    = Math.min(Math.round(((Date.now() - startTime) / MWS_TOTAL_MS) * 100), 100);
+        const filled = Math.round(pct / 100 * 26);
+        const bar    = "#".repeat(filled) + ".".repeat(26 - filled);
+        const kbDone = Math.round(pct / 100 * MWS_TOTAL_KB);
+        const rate   = rInt(80, 960);
+        dlFill.style.width  = pct + "%";
+        dlLabel.textContent = `DOWNLOADING: keylogger_x64.exe  [${bar}]  ${pct}%`;
+        dlStats.textContent = `${kbDone} KB / ${MWS_TOTAL_KB} KB  —  ${rate} KB/s`;
+        if (pct >= 100) clearInterval(progId);
+      }, 100);
+
+      // Mini log interval
+      let lineIdx = 0;
+      const logId = setInterval(() => {
+        const entry = MWS_THREAT_LINES[lineIdx % MWS_THREAT_LINES.length];
+        const text  = typeof entry === "function" ? entry() : entry;
+        lineIdx++;
+        const div = document.createElement("div");
+        div.className   = "mws-mini-line";
+        div.textContent = text;
+        miniLog.appendChild(div);
+        while (miniLog.childElementCount > 6) miniLog.removeChild(miniLog.firstChild);
+      }, MWS_LINE_MS);
+
+      _mwsTimers.push(progId, logId);
+
+      // After download finishes, return to the previous screen (blue terminal)
+      const endId = setTimeout(() => {
+        clearInterval(progId);
+        clearInterval(logId);
+        _mwsTimers = [];
+        showScreen(_mwsPrevScreen || screenHack);
+      }, MWS_TOTAL_MS);
+
+      _mwsTimers.push(endId);
+    }
+
+    // "Return" button on malware reveal card
+    document.getElementById("mws-btn-close").addEventListener("click", () => {
+      _mwsTimers.forEach(id => { clearInterval(id); clearTimeout(id); });
+      _mwsTimers = [];
+      showScreen(_mwsPrevScreen || screenLanding);
+    });
+
+
+    /* ===========================================================
+       REVEAL SCREEN
+    =========================================================== */
+    function showReveal(nickname) {
+      const displayName = nickname ? `<strong>${escapeHTML(nickname)}</strong>` : "ուսանողը";
+      revealExplain.innerHTML =
+        `Այս սիմուլյացիան ցույց տվեց ${displayName}-ին, թե որքան արագ մի էջը, որը լիովին
+        նորմալ տեսք ունի (ծանոթ Python վարժություն, հաճելի գունային գամմա, պարզ տեքստային
+        դաշտ), կարող է ստիպել ձեզ զգալ, կարծես ձեր սարքը վտանգված է:
+        <br /><br />
+        Իրական ֆիշինգային էջերն օգտագործում են նույն հնարքները՝ սովորական դիզայն,
+        հանգստացնող պիտակներ և ընդամենը մեկ դաշտ՝ սկսելու համար: Նպատակն է ձևավորել
+        ձեր բնազդը՝ <em>կանգ առնել և հարցականի տակ դնել</em>, նախքան որևէ բան
+        որևէ տեղ մուտքագրելը:`;
+      showScreen(screenReveal);
+    }
+
+    // HTML-escape helper — used only for echoing the nickname into the DOM
+    function escapeHTML(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+
+    /* ===========================================================
+       RESTART BUTTON
+    =========================================================== */
+    btnRestart.addEventListener("click", function () {
+      // Clear dialogs and overlay from the previous run
+      document.getElementById("dialog-layer").innerHTML = "";
+      document.getElementById("malware-overlay").classList.remove("active");
+      _mwTimers.forEach(id => { clearTimeout(id); clearInterval(id); });
+      _mwTimers = [];
+      _intervals.forEach(clearInterval);
+      _intervals = [];
+      if (_endTimer) { clearTimeout(_endTimer); _endTimer = null; }
+      dlgCloseCount = 0;
+      _currentNickname = "";
+      nicknameInput.value = "";
+      document.getElementById("enroll-username").value = "";
+      document.getElementById("enroll-password").value = "";
+      document.getElementById("enroll-confirm").value = "";
+      showScreen(screenEnroll);
+      document.getElementById("enroll-username").focus();
+    });
+
+    // ---- Teacher shortcut: Ctrl+Shift+R triggers the reveal ----
+    document.addEventListener("keydown", function (e) {
+      if (e.ctrlKey && e.shiftKey && e.key === "R") {
+        e.preventDefault();
+        if (screenHack.classList.contains("screen--active") && _currentNickname) {
+          _intervals.forEach(clearInterval);
+          _intervals = [];
+          showReveal(_currentNickname);
+        }
+      }
+    });
+
+  </script>
+
+</body>
+</html>
