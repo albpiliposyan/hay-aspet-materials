@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Me — Alex</title>
+  <style>
+    /* 1. Element selector: styles the whole page */
+    body {
+      font-family: Arial, sans-serif;
+      background: #eaf1fb;
+      color: #24324a;
+      margin: 0;
+      padding: 30px 16px;
+    }
+
+    /* 2. Class selector: styles elements with class="card" */
+    .card {
+      background: white;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px #bccce080;
+    }
+
+    h1 { color: #2455a4; text-align: center; }
+    h2 { color: #2455a4; margin-top: 30px; }
+    p { line-height: 1.7; }
+
+    /* 3. ID selector: styles just one special paragraph */
+    #intro {
+      text-align: center;
+      font-size: 18px;
+    }
+
+    /* 4. Pseudo-element: the first letter becomes large */
+    #intro::first-letter {
+      font-size: 30px;
+      font-weight: bold;
+      color: #e56b42;
+    }
+
+    /* 5. Child selector: only list items directly inside a list */
+    ul > li {
+      padding: 9px;
+      margin: 6px 0;
+      border-radius: 8px;
+      background: #eef4ff;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    /* 6. :hover — reacts when the mouse is over an item */
+    ul > li:hover {
+      background: #c7ddff;
+      transform: translateX(10px);
+    }
+
+    /* 7. :nth-child — style alternating movie list items */
+    ol li:nth-child(odd) {
+      color: #b54b2b;
+      font-weight: bold;
+    }
+
+    .place-image {
+      display: block;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 14px;
+      border: 4px solid #9dbde7;
+      transition: transform 0.25s, border-color 0.25s;
+    }
+
+    /* 8. Image hover effect */
+    .place-image:hover {
+      transform: scale(1.04);
+      border-color: #e56b42;
+    }
+
+    /* 9. Link selector and hover */
+    a { color: #2455a4; font-weight: bold; }
+    a:hover { color: #e56b42; }
+
+    /* 10. ::selection — changes selected text's colors */
+    ::selection {
+      background: #ffcf70;
+      color: #17223b;
+    }
+
+    hr { border: 0; border-top: 2px solid #dce6f5; margin: 26px 0; }
+    .footer { text-align: center; color: #65748c; font-size: 14px; }
+    .tip { background: #fff3d9; border-left: 4px solid #e6a33c; padding: 12px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Hello, I'm Alex!</h1>
+    <p id="intro">I'm a <strong>9th-grade student</strong>. I love technology, football, and learning new things. This is my <em>first website!</em></p>
+
+    <hr>
+    <h2>My Hobbies</h2>
+    <ul>
+      <li>Playing football</li>
+      <li>Listening to music</li>
+      <li>Playing video games</li>
+      <li>Traveling</li>
+    </ul>
+
+    <h2>My Favorite Movies</h2>
+    <ol>
+      <li>Interstellar</li>
+      <li>The Dark Knight</li>
+      <li>Home Alone</li>
+    </ol>
+
+    <h2>My Favorite Place</h2>
+    <img class="place-image" src="https://images.unsplash.com/photo-1500534623283-312aade485b7?w=900" alt="Beautiful mountain landscape">
+    <p>I love visiting beautiful places with mountains and lakes.</p>
+
+    <h2>My Favorite Website</h2>
+    <p>Visit <a href="https://www.wikipedia.org" target="_blank" rel="noopener noreferrer">Wikipedia</a> to discover something new!</p>
+
+    <p class="tip">Try hovering over the hobbies, image, and link. Select some text with your mouse, too!</p>
+    <hr>
+    <p class="footer">Made with HTML &amp; CSS</p>
+  </main>
+</body>
+</html>
